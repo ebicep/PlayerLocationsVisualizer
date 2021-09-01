@@ -1,54 +1,103 @@
 package com.ebicep.playerlocationsvisualizer;
 
 
+import com.ebicep.playerlocationsvisualizer.components.jcombobox.GameSelector;
+import com.ebicep.playerlocationsvisualizer.components.jcombobox.MapSelector;
+import com.ebicep.playerlocationsvisualizer.components.jpanel.Options;
+import com.ebicep.playerlocationsvisualizer.components.jpanel.PlayerSelector;
+import com.ebicep.playerlocationsvisualizer.components.jpanel.maps.AbstractMap;
+import com.ebicep.playerlocationsvisualizer.components.jpanel.maps.Crossfire;
 import com.ebicep.playerlocationsvisualizer.components.jpanel.maps.Rift;
 import com.ebicep.playerlocationsvisualizer.database.DatabaseManager;
 
+import javax.smartcardio.Card;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
 
+    public static final JFrame f = new JFrame("PlayerLocationsVisualizer");
+    public static String selectedGame;
+    public static List<JPanel> jPanels = new ArrayList<>();
+    public static List<DatabasePlayer> databasePlayers = new ArrayList<>();
+
     public static void main(String[] args) {
-        System.out.println("here");
-        CompletableFuture.supplyAsync(DatabaseManager::connect)
-                .thenAccept(Main::createAndShowGUI);
+        Logger.getLogger( "org.mongodb.driver" ).setLevel(Level.SEVERE);
+        DatabaseManager.connect();
+        while (!DatabaseManager.connected) {
+        }
+        SwingUtilities.invokeLater(Main::createAndShowGUI);
     }
 
-    private static void createAndShowGUI(boolean connected) {
-        System.out.println("?");
-        JFrame f = new JFrame("PlayerLocationsVisualizer");
+    private static void createAndShowGUI() {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setResizable(false);
-        f.setLayout(new FlowLayout());
-        List<Location> locations = new ArrayList<>();
-        String x = "-80,-59,-40,-21,-1,17,37,45,53,66,86,66,49,31,14,-5,-24,-39,-48,-54,-67,-85,-94,-74,-65,-56,-29,-10,12,";
-        String z = "-26,-28,-28,-24,-14,-1,5,-14,0,17,23,18,8,5,-4,-7,-8,2,16,-2,-17,-23,-17,-28,-8,26,35,70,52,";
-        List<Integer> xInt = new ArrayList<>();
-        List<Integer> zInt = new ArrayList<>();
-        for (String s : x.split(",")) {
-            xInt.add(Integer.parseInt(s));
-        }
-        for (String s : z.split(",")) {
-            zInt.add(Integer.parseInt(s));
-        }
-        for (int i = 0; i < xInt.size(); i++) {
-            locations.add(new Location(xInt.get(i), zInt.get(i)));
-        }
-        f.add(new Rift(locations));
 
-        JButton button = new JButton();
-        button.setSize(10, 5);
-        f.add(button);
-        JComboBox<String> comboBox = new JComboBox<>();
-        f.add(comboBox);
+        JPanel options = new JPanel();
+        options.setName("Options");
+        options.add(new GameSelector());
+        options.setBorder(new EmptyBorder(new Insets(10, 15, 10, 15)));
+        options.add(Box.createRigidArea(new Dimension(0, 10)));
+        options.add(new PlayerSelector());
+        options.add(Box.createRigidArea(new Dimension(0, 500)));
+
+        DatabaseManager.updateDatabasePlayers();
+
+        JPanel map = new JPanel();
+        map.setName("Map");
+        map.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Map"), new EmptyBorder(5, 5, 5, 5)));
+        map.setMaximumSize(new Dimension(2000, 1000));
+        map.add(new Rift());
+
+
+        BoxLayout layout1 = new BoxLayout(map, BoxLayout.Y_AXIS);
+        BoxLayout layout2 = new BoxLayout(options, BoxLayout.Y_AXIS);
+        map.setLayout(layout1);
+        options.setLayout(layout2);
+
+        jPanels.add(map);
+        jPanels.add(options);
+
+        f.setLayout(new FlowLayout());
+        f.add(map);
+        f.add(options);
 
         f.pack();
         f.setLocationRelativeTo(null);
         f.setVisible(true);
     }
+
+    public static void addMap(AbstractMap map) {
+        JPanel jPanel = getMap();
+        for (Component component : Objects.requireNonNull(jPanel).getComponents()) {
+            if(component.getClass().getGenericSuperclass().equals(AbstractMap.class)) {
+                System.out.println(jPanel.getSize());
+                jPanel.remove(component);
+                jPanel.add(map);
+                jPanel.revalidate();
+                jPanel.repaint();
+                f.pack();
+                System.out.println(jPanel.getSize());
+
+                //SwingUtilities.updateComponentTreeUI(f);
+            }
+        }
+    }
+
+    public static JPanel getMap() {
+        for (JPanel jPanel : jPanels) {
+            if(jPanel.getName().equals("Map")) {
+                return jPanel;
+            }
+        }
+        return null;
+    }
+
 }
