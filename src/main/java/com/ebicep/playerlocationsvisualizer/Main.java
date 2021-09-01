@@ -78,15 +78,11 @@ public class Main {
         JPanel jPanel = getMap();
         for (Component component : Objects.requireNonNull(jPanel).getComponents()) {
             if(component.getClass().getGenericSuperclass().equals(AbstractMap.class)) {
-                System.out.println(jPanel.getSize());
                 jPanel.remove(component);
                 jPanel.add(map);
                 jPanel.revalidate();
                 jPanel.repaint();
                 f.pack();
-                System.out.println(jPanel.getSize());
-
-                //SwingUtilities.updateComponentTreeUI(f);
             }
         }
     }

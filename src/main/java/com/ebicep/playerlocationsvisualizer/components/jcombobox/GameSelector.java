@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 
 public class GameSelector extends JComboBox<String> {
 
@@ -29,18 +30,19 @@ public class GameSelector extends JComboBox<String> {
     public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
         String game = (String) cb.getSelectedItem();
-        Main.selectedGame = game;
-        assert game != null;
-        String map = game.substring(game.indexOf("-") + 2);
-        switch (map) {
-            case "Rift":
-                Main.addMap(new Rift());
-                break;
-            case "Crossfire":
-                Main.addMap(new Crossfire());
-                break;
+        if(!Objects.equals(Main.selectedGame, game)) {
+            Main.selectedGame = game;
+            DatabaseManager.updateDatabasePlayers();
+            assert game != null;
+            String map = game.substring(game.indexOf("-") + 2);
+            switch (map) {
+                case "Rift":
+                    Main.addMap(new Rift());
+                    break;
+                case "Crossfire":
+                    Main.addMap(new Crossfire());
+                    break;
+            }
         }
-        System.out.println(map);
-        System.out.println(Main.getMap());
     }
 }
