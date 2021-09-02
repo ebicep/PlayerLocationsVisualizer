@@ -5,6 +5,8 @@ import com.ebicep.playerlocationsvisualizer.Location;
 import com.ebicep.playerlocationsvisualizer.Main;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 
@@ -20,6 +22,9 @@ public abstract class AbstractMap extends JPanel {
         this.scale = scale;
         this.xOffset = map.getIconWidth() / 2 + 6;
         this.yOffset = map.getIconHeight() / 2 - 7;
+        setName("Map");
+        //setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Map"), new EmptyBorder(5, 5, 5, 5)));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     @Override
@@ -36,25 +41,21 @@ public abstract class AbstractMap extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2d.setColor(Color.RED);
-            g2d.setStroke(new BasicStroke(3));
+            g2d.setStroke(new BasicStroke(1));
             g2d.translate(x, y);
-            int dimensions = 10;
+            int ovalDimensions = 10;
+            int headDimensions = 20;
             for (DatabasePlayer databasePlayer : Main.databasePlayers) {
-                List<Location> locations = databasePlayer.getLocations();
-                for (int i = 0; i < locations.size(); i++) {
-                    Location location = locations.get(i);
-                    if(i != 0) {
-                        Location previousLocation = locations.get(i - 1);
-                        g2d.setColor(Color.BLACK);
-                        g2d.drawLine((int) (location.getX() * scale) + xOffset, (int) (location.getZ() * scale) + yOffset, (int) (previousLocation.getX() * scale) + xOffset, (int) (previousLocation.getZ() * scale) + yOffset);
-                    }
-                    if(i == 0) {
-                        g2d.setColor(Color.GREEN);
-                        g2d.fillOval((int) (location.getX() * scale) + xOffset - dimensions/2, (int) (location.getZ() * scale) + yOffset - dimensions/2, dimensions, dimensions);
-                    } else if(i == locations.size() - 1) {
-                        g2d.setColor(Color.RED);
-                        g2d.fillOval((int) (location.getX() * scale) + xOffset - dimensions/2, (int) (location.getZ() * scale) + yOffset - dimensions/2, dimensions, dimensions);
-                    }
+                if (databasePlayer.isShow()) {
+                    List<Location> locations = databasePlayer.getLocations();
+                    for (int i = 0; i < locations.size(); i++) {
+                        Location location = locations.get(i);
+                        if (i != 0) {
+                            Location previousLocation = locations.get(i - 1);
+                            g2d.setColor(databasePlayer.getColor());
+                            g2d.drawLine((int) (location.getX() * scale) + xOffset, (int) (location.getZ() * scale) + yOffset, (int) (previousLocation.getX() * scale) + xOffset, (int) (previousLocation.getZ() * scale) + yOffset);
+                        }
+
 
 //                if(i < locations.size() - 2) {
 //                    Location locationAfter1 = locations.get(i + 1);
@@ -66,15 +67,25 @@ public abstract class AbstractMap extends JPanel {
 //
 //                    i++;
 //                }
-
-
-                }
-                g2d.setColor(Color.BLUE);
+                    }
+                    g2d.setColor(Color.BLUE);
 //            g2d.fillOval((int) ((-96.5 * 6.075) + xOffset), (int) ((-17.5 * 6.075) + yOffset), 5,5);
 //            g2d.fillRect((xOffset) - 1, yOffset - 1, 2,2);
+                }
 
             }
 
+            g2d.setColor(Color.MAGENTA);
+            for (DatabasePlayer databasePlayer : Main.databasePlayers) {
+                if (databasePlayer.isShow()) {
+                    List<Location> locations = databasePlayer.getLocations();
+                    Location firstLocation = locations.get(0);
+                    Location lastLocation = locations.get(locations.size() - 1);
+                    g2d.drawImage(Main.playerHeads.get(databasePlayer.getUuid()), (int) (firstLocation.getX() * scale) + xOffset - headDimensions / 2, (int) (firstLocation.getZ() * scale) + yOffset - headDimensions / 2, headDimensions, headDimensions, null);
+                    g2d.drawImage(Main.playerHeads.get(databasePlayer.getUuid()), (int) (lastLocation.getX() * scale) + xOffset - headDimensions / 2, (int) (lastLocation.getZ() * scale) + yOffset - headDimensions / 2, headDimensions, headDimensions, null);
+                    //g2d.fillOval((int) (lastLocation.getX() * scale) + xOffset - ovalDimensions / 2, (int) (lastLocation.getZ() * scale) + yOffset - ovalDimensions / 2, ovalDimensions, ovalDimensions);
+                }
+            }
         }
 
         g2d.dispose();

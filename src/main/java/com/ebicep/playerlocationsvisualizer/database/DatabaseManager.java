@@ -10,8 +10,13 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -73,10 +78,10 @@ public class DatabaseManager {
             String game = DatabaseManager.getDocumentInfoWithDotNotation(document, "date") + " - " + DatabaseManager.getDocumentInfoWithDotNotation(document, "map");
             if(game.equals(Main.selectedGame)) {
                 for (Document o : ((ArrayList<Document>) getDocumentInfoWithDotNotation(document, "players.blue"))) {
-                    Main.databasePlayers.add(new DatabasePlayer((String) o.get("name"), (String) o.get("uuid"), (String) o.get("x_locations"), (String) o.get("z_locations")));
+                    Main.databasePlayers.add(new DatabasePlayer((String) o.get("name"), (String) o.get("uuid"), (String) o.get("x_locations"), (String) o.get("z_locations"), Color.BLUE));
                 }
                 for (Document o : ((ArrayList<Document>) getDocumentInfoWithDotNotation(document, "players.red"))) {
-                    Main.databasePlayers.add(new DatabasePlayer((String) o.get("name"), (String) o.get("uuid"), (String) o.get("x_locations"), (String) o.get("z_locations")));
+                    Main.databasePlayers.add(new DatabasePlayer((String) o.get("name"), (String) o.get("uuid"), (String) o.get("x_locations"), (String) o.get("z_locations"), Color.RED));
                 }
                 break;
             }

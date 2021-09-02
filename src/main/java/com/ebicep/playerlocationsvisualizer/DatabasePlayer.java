@@ -1,5 +1,6 @@
 package com.ebicep.playerlocationsvisualizer;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +10,15 @@ public class DatabasePlayer {
     private String uuid;
     private String xLocations;
     private String zLocations;
+    private boolean show = true;
+    private Color color;
 
-    public DatabasePlayer(String name, String uuid, String xLocations, String zLocations) {
+    public DatabasePlayer(String name, String uuid, String xLocations, String zLocations, Color color) {
         this.name = name;
         this.uuid = uuid;
         this.xLocations = xLocations;
         this.zLocations = zLocations;
+        this.color = color;
     }
 
     public List<Location> getLocations() {
@@ -41,11 +45,19 @@ public class DatabasePlayer {
         return uuid;
     }
 
-    public String getxLocations() {
-        return xLocations;
+    public boolean isShow() {
+        return show;
     }
 
-    public String getzLocations() {
-        return zLocations;
+    public void setShow(boolean show) {
+        this.show = show;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }

@@ -2,22 +2,23 @@ package com.ebicep.playerlocationsvisualizer;
 
 
 import com.ebicep.playerlocationsvisualizer.components.jcombobox.GameSelector;
-import com.ebicep.playerlocationsvisualizer.components.jcombobox.MapSelector;
 import com.ebicep.playerlocationsvisualizer.components.jpanel.Options;
 import com.ebicep.playerlocationsvisualizer.components.jpanel.PlayerSelector;
 import com.ebicep.playerlocationsvisualizer.components.jpanel.maps.AbstractMap;
-import com.ebicep.playerlocationsvisualizer.components.jpanel.maps.Crossfire;
 import com.ebicep.playerlocationsvisualizer.components.jpanel.maps.Rift;
 import com.ebicep.playerlocationsvisualizer.database.DatabaseManager;
+import org.bson.Document;
 
-import javax.smartcardio.Card;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,12 +26,34 @@ public class Main {
 
     public static final JFrame f = new JFrame("PlayerLocationsVisualizer");
     public static String selectedGame;
-    public static List<JPanel> jPanels = new ArrayList<>();
     public static List<DatabasePlayer> databasePlayers = new ArrayList<>();
+    public static AbstractMap map;
+    public static Options options;
+    public static HashMap<String, Image> playerHeads = new HashMap<>();
 
     public static void main(String[] args) {
         Logger.getLogger( "org.mongodb.driver" ).setLevel(Level.SEVERE);
         DatabaseManager.connect();
+        for (Document document : DatabaseManager.gamesInformation.find()) {
+            for (Document o : ((ArrayList<Document>) DatabaseManager.getDocumentInfoWithDotNotation(document, "players.blue"))) {
+                if(!Main.playerHeads.containsKey((String) o.get("uuid"))) {
+                    try {
+                        Main.playerHeads.put((String) o.get("uuid"), ImageIO.read(new URL("https://crafatar.com/avatars/" + o.get("uuid"))));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            for (Document o : ((ArrayList<Document>) DatabaseManager.getDocumentInfoWithDotNotation(document, "players.red"))) {
+                if(!Main.playerHeads.containsKey((String) o.get("uuid"))) {
+                    try {
+                        Main.playerHeads.put((String) o.get("uuid"), ImageIO.read(new URL("https://crafatar.com/avatars/" + o.get("uuid"))));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
         while (!DatabaseManager.connected) {
         }
         SwingUtilities.invokeLater(Main::createAndShowGUI);
@@ -38,32 +61,10 @@ public class Main {
 
     private static void createAndShowGUI() {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setResizable(false);
+        f.setResizable(true);
 
-        JPanel options = new JPanel();
-        options.setName("Options");
-        options.add(new GameSelector());
-        options.setBorder(new EmptyBorder(new Insets(10, 15, 10, 15)));
-        options.add(Box.createRigidArea(new Dimension(0, 10)));
-        options.add(new PlayerSelector());
-        options.add(Box.createRigidArea(new Dimension(0, 500)));
-
-        DatabaseManager.updateDatabasePlayers();
-
-        JPanel map = new JPanel();
-        map.setName("Map");
-        map.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Map"), new EmptyBorder(5, 5, 5, 5)));
-        map.setMaximumSize(new Dimension(2000, 1000));
-        map.add(new Rift());
-
-
-        BoxLayout layout1 = new BoxLayout(map, BoxLayout.Y_AXIS);
-        BoxLayout layout2 = new BoxLayout(options, BoxLayout.Y_AXIS);
-        map.setLayout(layout1);
-        options.setLayout(layout2);
-
-        jPanels.add(map);
-        jPanels.add(options);
+        Main.map = new Rift();
+        Main.options = new Options();
 
         f.setLayout(new FlowLayout());
         f.add(map);
@@ -75,25 +76,15 @@ public class Main {
     }
 
     public static void addMap(AbstractMap map) {
-        JPanel jPanel = getMap();
-        for (Component component : Objects.requireNonNull(jPanel).getComponents()) {
-            if(component.getClass().getGenericSuperclass().equals(AbstractMap.class)) {
-                jPanel.remove(component);
-                jPanel.add(map);
-                jPanel.revalidate();
-                jPanel.repaint();
-                f.pack();
-            }
-        }
+        Main.map = map;
+        options.getPlayerSelector().resetPlayers();
+        reload();
     }
 
-    public static JPanel getMap() {
-        for (JPanel jPanel : jPanels) {
-            if(jPanel.getName().equals("Map")) {
-                return jPanel;
-            }
-        }
-        return null;
+    public static void reload() {
+        f.revalidate();
+        f.repaint();
+        f.pack();
     }
 
 }

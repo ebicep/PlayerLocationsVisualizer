@@ -1,33 +1,35 @@
 package com.ebicep.playerlocationsvisualizer.components.jpanel;
 
 import com.ebicep.playerlocationsvisualizer.components.jcombobox.GameSelector;
-import com.ebicep.playerlocationsvisualizer.components.jcombobox.MapSelector;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class Options extends JPanel {
 
-    JButton button = new JButton("Reload");
-    JComboBox<String> mapSelector = new MapSelector();
-    JComboBox<String> gameSelector = new GameSelector();
+    private final GameSelector gameSelector = new GameSelector();
+    private final PlayerSelector playerSelector = new PlayerSelector();
+    private final PlayerOptions playerOptions = new PlayerOptions();
 
-    public Options(LayoutManager layout) {
-        super(layout);
-
-        button.setSize(20, 10);
-        button.addActionListener(e -> {
-            System.out.println("CLICKED");
-        });
-
-        JPanel options = new JPanel();
-        options.add(button);
-        //options.add(mapSelector);
-        options.add(gameSelector);
-        add(options);
+    public Options() {
+        setName("Options");
+        setBorder(new EmptyBorder(new Insets(10, 15, 10, 15)));
+        add(gameSelector);
+        add(Box.createRigidArea(new Dimension(0, 10)));
+        add(playerSelector);
+        add(Box.createRigidArea(new Dimension(0, 10)));
+        add(playerOptions);
+        add(Box.createRigidArea(new Dimension(0, 500)));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
+    public GameSelector getGameSelector() {
+        return gameSelector;
+    }
+
+    public PlayerSelector getPlayerSelector() {
+        return playerSelector;
+    }
 
 }
